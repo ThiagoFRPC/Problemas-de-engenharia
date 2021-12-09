@@ -1,0 +1,99 @@
+'''
+Universidade Federal Fluminense
+TEE00149 - TRANSMISSÃO DE ENERGIA ELÉTRICA I
+Aluno: Paulo José Costa de Souza
+'''
+
+# Questão 01: Uma LT de 230 kV / 225 km parte de uma SE geradora, onde a tensão é mantida constante em
+# 230 kV, para atender uma carga de 80 MW em 220 kV. Nestas condições determine: (2 pontos)
+# a) Ângulo de potência; (1 ponto)
+# b) Rendimento e fluxo de potência; (1 pontos)
+
+# Dados da LT:
+
+# R = 0,172 Ω / km
+# L = 2,18 mH / km
+
+
+import math
+import cmath
+import sympy
+from math import floor, log10
+def powerise10(x):
+    """ Returns x as a*10**b with 0 <= a < 10
+    """
+    if x == 0: return 0,0
+    Neg = x < 0
+    if Neg: x = -x
+    a = 1.0 * x / 10**(floor(log10(x)))
+    b = int(floor(log10(x)))
+    if Neg: a = -a
+    return a,b
+def eng(x):
+    """Return a string representing x in an engineer friendly notation"""
+    a,b = powerise10(x)
+    if -3 < b < 3: return "%.4g" % x
+    a = a * 10**(b % 3)
+    b = b - b % 3
+    return "%.4gE%s" % (a,b)
+
+"PASSO 1:"
+
+# Coleta de dados:
+
+Vs = 230e3
+comp = 225e3
+P_carga = 80e6
+V_carga = 220e3
+R = 0.172
+L = 2.18e-3
+
+# Análise dos dados:
+
+Rl = 0.172
+Xl = 2*math.pi*60*L
+Zl = comp * complex(0.172,Xl)
+theta = cmath.phase(Zl)
+# print(abs(Zl))
+
+# Parte complicada: Descobrir P e Q usando o valor de delta:
+
+
+# link pra solução: https://www.desmos.com/calculator/et5ipjausc
+
+# NOTA: o valor da potência ATIVA deve estar em MW e o valor das tensões em kV!
+
+# Após isso, o valor de delta é:
+
+delta = math.radians(17.821)
+print(f'O valor de delta: {math.degrees(delta)}')
+
+# O valor de Q é a mesma fórmula, porém, usando a função trigonométrica SENO!
+# link pra solução: https://www.desmos.com/calculator/et5ipjausc
+
+# Logo, o valor de Q já em MVAr é:
+
+Q_carga = -17.9454828958e6
+print(f'O valor de Qr:{Q_carga}')
+
+# Calculando o valor de S:
+
+# S_carga = (((P_carga) ** 2) + ((Q_carga)) ** 2) ** (1 / 2)
+S_carga = complex(P_carga,Q_carga)
+print(f'O valor de Sr {abs(S_carga)}')
+# print(eng(math.degrees(cmath.phase(S_carga))))
+
+
+# c)
+
+Ss = cmath.rect(Vs**2/abs(Zl),theta) - cmath.rect(Vs*V_carga/abs(Zl),theta+delta)
+
+# O valor em MW e MVAr das potências podem ser encontradas aqui:
+print(f'O valor de Ss {abs(Ss) * 1000}')
+print(f'O valor de Ps {Ss.real * 1000}')
+print(f'O valor de Qs {Ss.imag * 1000}')
+
+# Cálculo do rendimento:
+
+Rend = (S_carga.real/(Ss.real*1000))*100
+print(f'O valor do rendimento {Rend}')
